@@ -29,7 +29,6 @@
 #include <zorba/singleton_item_sequence.h>
 #include <zorba/vector_item_sequence.h>
 #include <zorba/zorba.h>
-#include <zorba/zorbastring.h>
 
 #include "JavaVMSingelton.h"
 
