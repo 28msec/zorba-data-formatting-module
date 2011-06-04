@@ -26,6 +26,7 @@
  :
  : @author Markus Pilman
  : @library <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK - Java Development Kit</a>
+ : @project data-processing/data-formating
  :)
 module namespace xsl-fo = "http://www.zorba-xquery.com/modules/xsl-fo";
 
