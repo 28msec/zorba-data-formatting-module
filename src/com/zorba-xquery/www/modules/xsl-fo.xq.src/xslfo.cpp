@@ -21,8 +21,9 @@
 #include <zorba/base64.h>
 #include <zorba/empty_sequence.h>
 #include <zorba/error_list.h>
-#include <zorba/external_function.h>
+#include <zorba/function.h>
 #include <zorba/external_module.h>
+#include <zorba/user_exception.h>
 #include <zorba/file.h>
 #include <zorba/item_factory.h>
 #include <zorba/serializer.h>
@@ -41,7 +42,7 @@ class JavaException {
 
 namespace zorba { namespace xslfo {
  
-class GeneratePDFFunction : public PureStatelessExternalFunction {
+class GeneratePDFFunction : public NonContextualExternalFunction {
   private:
     const ExternalModule* theModule;
     ItemFactory* theFactory;
@@ -58,10 +59,10 @@ class GeneratePDFFunction : public PureStatelessExternalFunction {
     virtual String getLocalName() const { return "generator-impl"; }
 
     virtual ItemSequence_t 
-    evaluate(const StatelessExternalFunction::Arguments_t& args) const;
+    evaluate(const ExternalFunction::Arguments_t& args) const;
 };
 
-class FindApacheFopFunction : public PureStatelessExternalFunction {
+class FindApacheFopFunction : public NonContextualExternalFunction {
   private:
     const ExternalModule* theModule;
     ItemFactory* theFactory;
@@ -76,13 +77,13 @@ class FindApacheFopFunction : public PureStatelessExternalFunction {
     virtual String getLocalName() const { return "find-apache-fop"; }
 
     virtual ItemSequence_t 
-    evaluate(const StatelessExternalFunction::Arguments_t& args) const;
+    evaluate(const ExternalFunction::Arguments_t& args) const;
 };
 
 class XSLFOModule : public ExternalModule {
   private:
-    StatelessExternalFunction* generatePDF;
-    StatelessExternalFunction* findFop;
+    ExternalFunction* generatePDF;
+    ExternalFunction* findFop;
   public:
     XSLFOModule() :
       generatePDF(new GeneratePDFFunction(this)),
@@ -95,14 +96,14 @@ class XSLFOModule : public ExternalModule {
 
     virtual String getURI() const { return XSL_MODULE_NAMESPACE; }
 
-    virtual StatelessExternalFunction* getExternalFunction(const String& localName);
+    virtual ExternalFunction* getExternalFunction(const String& localName);
 
     virtual void destroy() {
       delete this;
     }
 };
 
-StatelessExternalFunction* XSLFOModule::getExternalFunction(const String& localName) {
+ExternalFunction* XSLFOModule::getExternalFunction(const String& localName) {
   if (localName == "generator-impl") {
     return generatePDF;
   } else if (localName == "find-apache-fop") {
@@ -117,7 +118,7 @@ void FindApacheFopFunction::throwError(std::string aName) const {
   throw USER_EXCEPTION(lQName, aName);
 }
 
-ItemSequence_t FindApacheFopFunction::evaluate(const StatelessExternalFunction::Arguments_t& args) const
+ItemSequence_t FindApacheFopFunction::evaluate(const ExternalFunction::Arguments_t& args) const
 {
   std::string lDirectorySeparator(File::getDirectorySeparator());
   std::string lFopHome;
@@ -248,7 +249,7 @@ ItemSequence_t FindApacheFopFunction::evaluate(const StatelessExternalFunction::
   return ItemSequence_t(new VectorItemSequence(lClassPath));
 }
 
-ItemSequence_t GeneratePDFFunction::evaluate(const StatelessExternalFunction::Arguments_t& args) const
+ItemSequence_t GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t& args) const
 {
   Item classPathItem;
   Iterator_t lIter = args[2]->getIterator();
