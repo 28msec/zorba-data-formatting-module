@@ -35,7 +35,7 @@ IF (JNI_FOUND)
 
     INCLUDE_DIRECTORIES(${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
     INCLUDE_DIRECTORIES(${JAVA_INCLUDE_PATH})
-    GENERATE_MODULE_LIBRARY(xsl-fo "${JAVA_JVM_LIBRARY}")
+    DECLARE_ZORBA_MODULE("http://www.zorba-xquery.com/modules/xsl-fo" 1.0 "xsl-fo.xq" "${JAVA_JVM_LIBRARY}")
   ELSE (JNI_FOUND)
     IF (ZORBA_WITH_FOP)
       MESSAGE(FATAL_ERROR "Could not find Java and/or JNI. Please install a JDK or compile Zorba with XSL-FO support by setting ZORBA_WITH_FOP to false.")

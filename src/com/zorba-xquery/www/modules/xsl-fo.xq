@@ -32,6 +32,9 @@ module namespace xsl-fo = "http://www.zorba-xquery.com/modules/xsl-fo";
 
 import module namespace file = "http://expath.org/ns/file";
 
+declare namespace ver = "http://www.zorba-xquery.com/options/versioning";
+declare option ver:module-version "1.0";
+
 (:~
  : This is the name of the error which gets thrown, if zorba is unable
  : to start a JVM.
