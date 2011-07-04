@@ -26,7 +26,7 @@
  :
  : @author Markus Pilman
  : @library <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK - Java Development Kit</a>
- : @project data processing/data formating
+ : @project data processing/data formatting
  :)
 module namespace xsl-fo = "http://www.zorba-xquery.com/modules/xsl-fo";
 
@@ -92,7 +92,7 @@ declare variable $xsl-fo:TIFF as xs:string := "image/tiff";
  : The generator function takes an xsl-fo as input and generates output in the format given as input.
  : The output format can be given as a Mime - for example "application/pdf" - or one of the predefines
  : variables can be used - like $xsl-fo:PDF. Please refer to the Apache FOP documentation for documentation
- : about the supported ouput formats.
+ : about the supported output formats.
  :
  : Apache FOP does not support 100% of the XSL-FO standard. Please consult the official documentation
  : for further information.
@@ -116,9 +116,9 @@ declare function xsl-fo:generator($output-format as xs:string, $xsl-fo-document 
  : On a Mac OS X computer, it should be sufficient to install Apache FOP via Mac Ports, on
  : Ubuntu it should be sufficient to install the fop packages via apt-get.
  :
- : This function tries to find the jar files via envroinment variables. The user can set the
+ : This function tries to find the jar files via environment variables. The user can set the
  : variable FOP_HOME to the root directory of an Apache FOP distribution. If you have all
- : Jar files in the same directory, you can set the envroinment variable FOP_LIB_DIR to this
+ : Jar files in the same directory, you can set the environment variable FOP_LIB_DIR to this
  : directory.
  :
  : @param $output-format The mime of the output format, to tell Apache FOP which kind of document it should
