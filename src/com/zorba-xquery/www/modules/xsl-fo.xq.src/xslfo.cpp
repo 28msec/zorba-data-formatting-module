@@ -20,7 +20,7 @@
 
 #include <zorba/base64.h>
 #include <zorba/empty_sequence.h>
-#include <zorba/error_list.h>
+#include <zorba/diagnostic_list.h>
 #include <zorba/function.h>
 #include <zorba/external_module.h>
 #include <zorba/user_exception.h>
