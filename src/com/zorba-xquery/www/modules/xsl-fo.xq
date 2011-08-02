@@ -34,6 +34,8 @@ module namespace xsl-fo = "http://www.zorba-xquery.com/modules/xsl-fo";
 
 import module namespace file = "http://expath.org/ns/file";
 
+declare namespace err = "http://www.w3.org/2005/xqt-errors";
+
 declare namespace ver = "http://www.zorba-xquery.com/options/versioning";
 declare option ver:module-version "1.0";
 
@@ -132,12 +134,12 @@ declare function xsl-fo:generator($output-format as xs:string, $xsl-fo-document 
  : @error JAR-NOT-FOUND If a needed Java library could not be found.
  :)
 declare function xsl-fo:generator($output-format as xs:string, $xsl-fo-document as node()) as xs:base64Binary {
-  let $classpath := try { xsl-fo:find-apache-fop() } catch * ($errcode, $errdesc, $errval) { fn:error($xsl-fo:JAR-NOT-FOUND, $errdesc) }
+  let $classpath := try { xsl-fo:find-apache-fop() } catch * { fn:error($xsl-fo:JAR-NOT-FOUND, $err:description) }
   return
     try {
       xsl-fo:generator($output-format, $xsl-fo-document, $classpath)
-    } catch * ($errcode, $errdesc, $errval) {
-      fn:error(fn:QName('http://www.zorba-xquery.com', fn:substring-before($errdesc, '|')), fn:substring-after($errdesc, '|'))
+    } catch * {
+      fn:error(fn:QName('http://www.zorba-xquery.com', fn:substring-before($err:description, '|')), fn:substring-after($err:description, '|'))
     }
 };
 
