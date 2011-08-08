@@ -111,7 +111,7 @@ declare variable $xsl-fo:TIFF as xs:string := "image/tiff";
  : @error JAVA-EXCEPTION If Apache FOP throws an exception - i.e. if the input format is not correct/supported.
  :)
 declare function xsl-fo:generator($output-format as xs:string, $xsl-fo-document as node(), $classpath as xs:string+) as xs:base64Binary {
-  let $dir-separator as xs:string := file:path-separator1()
+  let $dir-separator as xs:string := file:path-separator()
   return xsl-fo:generator-impl($output-format, $xsl-fo-document, fn:string-join($classpath, $dir-separator))
 };
 
