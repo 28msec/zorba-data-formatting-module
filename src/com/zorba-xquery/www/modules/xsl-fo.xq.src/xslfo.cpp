@@ -114,7 +114,7 @@ ExternalFunction* XSLFOModule::getExternalFunction(const String& localName) {
 
 void FindApacheFopFunction::throwError(std::string aName) const {
   Item lQName = theFactory->createQName("http://www.zorba-xquery.com/modules/xsl-fo",
-      "ZXQP0021_USER_ERROR");
+      "JAR-NOT-FOUND");
   throw USER_EXCEPTION(lQName, aName);
 }
 
@@ -176,7 +176,7 @@ ItemSequence_t FindApacheFopFunction::evaluate(const ExternalFunction::Arguments
   // If neither a path to the fop install dir, nor a path
   // to the jar files was found so far, we throw an exception.
   if (lFopHome == "" && lFopLibDir == "") {
-    throwError("None of the envroinment variables FOP_HOME and FOP_LIB_DIR has bin set.");
+    throwError("None of the environment variables FOP_HOME and FOP_LIB_DIR have been set.");
   }
   std::string lFopJarFile;
   {
@@ -398,8 +398,8 @@ ItemSequence_t GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t
     return ItemSequence_t(new SingletonItemSequence(lRes));
   } catch (VMOpenException&) {
     Item lQName = theFactory->createQName("http://www.zorba-xquery.com/modules/xsl-fo",
-        "ZXQP0021_USER_ERROR");
-    throw USER_EXCEPTION(lQName, "xsl-fo:VM001|ERROR: Could not start the Java VM (is the classpath set?)");
+        "VM001");
+    throw USER_EXCEPTION(lQName, "Could not start the Java VM (is the classpath set?)");
   } catch (JavaException&) {
     jclass stringWriterClass = env->FindClass("java/io/StringWriter");
     jclass printWriterClass = env->FindClass("java/io/PrintWriter");
@@ -419,11 +419,11 @@ ItemSequence_t GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t
     std::stringstream s;
     s << "A Java Exception was thrown:" << std::endl << errMsg;
     env->ReleaseStringUTFChars(errorMessage, errMsg);
-    std::string err("JAVA_ERROR|");
+    std::string err("");
     err += s.str();
     env->ExceptionClear();
     Item lQName = theFactory->createQName("http://www.zorba-xquery.com/modules/xsl-fo",
-        "ZXQP0021_USER_ERROR");
+        "JAVA-EXCEPTION");
     throw USER_EXCEPTION(lQName, err);
   }
   return ItemSequence_t(new EmptySequence());

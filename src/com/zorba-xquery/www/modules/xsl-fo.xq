@@ -16,17 +16,46 @@ xquery version "3.0";
  : limitations under the License.
 :)
 (:~
- : This module uses Apache-FOP to generate content from a xsl-fo. Apache-FOP supports
- : several output formats. See <a href="http://xmlgraphics.apache.org/fop/">the Apache FOP
- : documentation</a> for further information.
+ : 
+ : This module converts <a href="http://www.w3schools.com/xslfo/default.asp">XSL-FO</a> documents
+ : to various formats such as PDF, EPS, PCL, AFP, Text, PNG, Postscript, RTF, and TIFF.
+ : For instance, the following example converts a simple XSL-FO document to PDF:
+ : <br />
+ : <pre class="brush: xquery;">
+ : import module namespace fop = "http://www.zorba-xquery.com/modules/xsl-fo";
+ : import module namespace file = "http://expath.org/ns/file";
+ : 
+ : declare namespace fo = "http://www.w3.org/1999/XSL/Format";
  :
- : Note for Windows users: Under Windows, this module won't work out of the box, since
+ : let $xsl-fo := <fo:root xmlns:fo="http://www.w3.org/1999/XSL/Format">
+ :   <fo:layout-master-set>
+ :     <fo:simple-page-master master-name="my-page">
+ :       <fo:region-body margin="1in"/>
+ :     </fo:simple-page-master>
+ :   </fo:layout-master-set>
+ : 
+ :   <fo:page-sequence master-reference="my-page">
+ :     <fo:flow flow-name="xsl-region-body">
+ :       <fo:block>Hello, world!</fo:block>
+ :     </fo:flow>
+ :   </fo:page-sequence>
+ :  </fo:root>
+ : let $pdf := fop:generator($fop:PDF, $xsl-fo)
+ : return file:write-binary("simple.pdf", $pdf) 
+ : </pre>
+ : <br /> 
+ : This module uses Apache-FOP to generate content from an XSL-FO document.
+ : See <a href="http://xmlgraphics.apache.org/fop/">the Apache FOP documentation</a> for further information.
+ : <br />
+ : <br />
+ : <b>Note for Windows users</b>: On Windows, this module won't work out of the box, since
  : this module uses Java. But the Java VM dll is not in the system path by default. To make
  : this module work, you need to add the directory where the jvm.dll is located to the
  : system path. This dll is located at JRE_DIR\bin\client. On a standard installation, this would
  : be something a path like "C:\Program Files\Java\jre6\bin\client".
  :
  : @author Markus Pilman
+ : @see http://xmlgraphics.apache.org/fop/
  : @library <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK - Java Development Kit</a>
  : @project data processing/data formatting
  :)
@@ -40,75 +69,58 @@ declare namespace ver = "http://www.zorba-xquery.com/options/versioning";
 declare option ver:module-version "1.0";
 
 (:~
- : This is the name of the error which gets thrown, if zorba is unable
- : to start a JVM.
- :)
-declare variable $xsl-fo:VM001 as xs:QName := xs:QName("xsl-fo:VM001");
-(:~
- : This is the name of the error which gets thrown, if Apache throws an exception
- : - the Java stack trace will be part of the description.
- :)
-declare variable $xsl-fo:JAVA-EXCEPTION as xs:QName := xs:QName("xsl-fo:JAVA-EXCEPTION");
-(:~
- : This is the name of the error which gets thrown, if zorba is unable to
- : find a required JAR library.
- :)
-declare variable $xsl-fo:JAR-NOT-FOUND as xs:QName := xs:QName("xsl-fo:JAR_NOT_FOUND");
-
-(:~
- : The mime type of IBMs AFP format.
+ : The mime type of IBMs AFP format (application/x-afp).
  :)
 declare variable $xsl-fo:AFP as xs:string := "application/x-afp";
 (:~
- : The mime type of the EPS format.
+ : The mime type of the EPS format (application/postscript).
  :)
 declare variable $xsl-fo:EPS as xs:string := "application/postscript";
 (:~
- : The mime type of the PCL format.
+ : The mime type of the PCL format (application/x-pcl).
  :)
 declare variable $xsl-fo:PCL as xs:string := "application/x-pcl";
 (:~
- : The mime type of the PDF format.
+ : The mime type of the PDF format (application/pdf).
  :)
 declare variable $xsl-fo:PDF as xs:string := "application/pdf";
 (:~
- : The mime type for plain text files.
+ : The mime type for plain text files (text/plain).
  :)
 declare variable $xsl-fo:PLAIN_TEXT as xs:string := "text/plain";
 (:~
- : The mime type of the PNG format.
+ : The mime type of the PNG format (image/png).
  :)
 declare variable $xsl-fo:PNG as xs:string := "image/png";
 (:~
- : The mime type of the postscript format.
+ : The mime type of the postscript format (application/postscript).
  :)
 declare variable $xsl-fo:POSTSCRIPT as xs:string := "application/postscript";
 (:~
- : The mime type of the RTF format.
+ : The mime type of the RTF format (application/rtf).
  :)
 declare variable $xsl-fo:RTF as xs:string := "application/rtf";
 (:~
- : The mime type of TIFF format.
+ : The mime type of TIFF format (application/tiff).
  :)
 declare variable $xsl-fo:TIFF as xs:string := "image/tiff";
 
 (:~
- : The generator function takes an xsl-fo as input and generates output in the format given as input.
- : The output format can be given as a Mime - for example "application/pdf" - or one of the predefines
- : variables can be used - like $xsl-fo:PDF. Please refer to the Apache FOP documentation for documentation
- : about the supported output formats.
+ : The generator function takes an XSL-FO document as input and generates output in the format given as input.
+ : The output format can be given as a MIME type - for example "application/pdf" - or one of the predefined
+ : variables can be used - like $xsl-fo:PDF. Please refer to the Apache FOP documentation for
+ : <a href="http://xmlgraphics.apache.org/fop/0.95/output.html">supported output formats</a>.
  :
- : Apache FOP does not support 100% of the XSL-FO standard. Please consult the official documentation
- : for further information.
+ : Apache FOP does not support 100% of the XSL-FO standard.
+ : Please consult the <a href="http://xmlgraphics.apache.org/fop/">official documentation for further information</a>.
  :
- : @param $output-format The mime of the output format. To tell Apache FOP which kind of document it should
- :        create.
- : @param $xsl-fo-document The xsl-fo node from which the document should be generated.
+ : @param $output-format The mime of the output format.
+ : @param $xsl-fo-document The XSL-FO document from which the output should be generated. <a href="http://www.w3schools.com/xslfo/xslfo_intro.asp">More information about XSL-FO documents.</a>.
  : @param $classpath The classpath which has to contain Apache FOP and all its dependencies. If you don't
  :        want to set this programmatically, use the generator function without this parameter instead.
  : @return The generated output document.
- : @error VM001 if zorba was unable to start the JVM.
- : @error JAVA-EXCEPTION If Apache FOP throws an exception - i.e. if the input format is not correct/supported.
+ : @error xsl-fo:VM001 If zorba was unable to start the JVM.
+ : @error xsl-fo:JAVA-EXCEPTION If Apache FOP throws an exception - i.e. if the input format is not correct/supported.
  :)
 declare function xsl-fo:generator($output-format as xs:string, $xsl-fo-document as node(), $classpath as xs:string+) as xs:base64Binary {
   let $dir-separator as xs:string := file:path-separator()
@@ -116,47 +128,44 @@ declare function xsl-fo:generator($output-format as xs:string, $xsl-fo-document 
 };
 
 (:~
- : The function behaves like generator#3, but tries to find the needed Java libraries itself.
- : On a Mac OS X computer, it should be sufficient to install Apache FOP via Mac Ports, on
- : Ubuntu it should be sufficient to install the fop packages via apt-get.
- :
+ : The function behaves like <a href="#generator#3">generator#3</a>, but tries to find the needed Java libraries itself.
+ : <br />
+ : On a Mac OS X computer, it should be sufficient to install Apache FOP via Mac Ports.<br />
+ : On Ubuntu it should be sufficient to install the fop packages via apt-get.<br />
+ : On Windows, the classpath needs to be set manually using <a href="#generator#3">generator#3</a>.
+ : <br />
  : This function tries to find the jar files via environment variables. The user can set the
  : variable FOP_HOME to the root directory of an Apache FOP distribution. If you have all
- : Jar files in the same directory, you can set the environment variable FOP_LIB_DIR to this
+ : JAR files in the same directory, you can set the environment variable FOP_LIB_DIR to this
  : directory.
  :
  : @param $output-format The mime of the output format, to tell Apache FOP which kind of document it should
  :        create.
- : @param $xsl-fo-document The xsl-fo node, from which the document should be generated.
+ : @param $xsl-fo-document The XSL-FO document from which the output should be generated.
  : @return The generated output document.
- : @error VM001 if zorba was unable to start the JVM.
- : @error JAVA-EXCEPTION If Apache FOP throws an exception - i.e. if the input format is not correct/supported.
- : @error JAR-NOT-FOUND If a needed Java library could not be found.
+ : @error xsl-fo:VM001 If zorba was unable to start the JVM.
+ : @error xsl-fo:JAVA-EXCEPTION If Apache FOP throws an exception - i.e. if the input format is not correct/supported.
+ : @error xsl-fo:JAR-NOT-FOUND If a needed Java library could not be found.
  :)
 declare function xsl-fo:generator($output-format as xs:string, $xsl-fo-document as node()) as xs:base64Binary {
-  let $classpath := try { xsl-fo:find-apache-fop() } catch * { fn:error($xsl-fo:JAR-NOT-FOUND, $err:description) }
+  let $classpath := xsl-fo:find-apache-fop()
   return
-    try {
-      xsl-fo:generator($output-format, $xsl-fo-document, $classpath)
-    } catch * {
-      fn:error(fn:QName('http://www.zorba-xquery.com', fn:substring-before($err:description, '|')), fn:substring-after($err:description, '|'))
-    }
+    xsl-fo:generator($output-format, $xsl-fo-document, $classpath)
 };
 
 (:~
- : WARNING: This is an internally used function and will not be available for future versions of Sausalito. Do not use this
- : function!
- : @return The class path for apache fop and its dependencies.
+ : Find apache FOP library and its dependencies
+ : @return The class path for apache FOP and its dependencies.
  :)
 declare %private function xsl-fo:find-apache-fop() as xs:string+ external;
 
 (:~
- : WARNING: This is an internally used function and will not be available for future versions of Sausalito. Do not use this
- : function!
- :
- : @param $output-format the mime type of the output format.
- : @param $xsl-fo-document is the xsl-fo representation of the document.
+ : Internal function used to format XSL-FO documents.
+ : 
+ : @param $output-format The mime type of the output format.
+ : @param $xsl-fo-document The XSL-FO representation of the document.
  : @param $classpath The Java classpath with apache fop and all its dependencies.
- : @return The base64Binary representation of document.
+ : @return The base64Binary Representation of document.
  :)
 declare %private function xsl-fo:generator-impl($output-format as xs:string, $xsl-fo-document as node(), $classpath as xs:string) as xs:base64Binary external;
+
