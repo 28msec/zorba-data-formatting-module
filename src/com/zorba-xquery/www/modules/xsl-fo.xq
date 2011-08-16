@@ -61,7 +61,6 @@ xquery version "3.0";
  :)
 module namespace xsl-fo = "http://www.zorba-xquery.com/modules/xsl-fo";
 
-import module namespace file = "http://expath.org/ns/file";
 
 declare namespace err = "http://www.w3.org/2005/xqt-errors";
 
@@ -123,8 +122,7 @@ declare variable $xsl-fo:TIFF as xs:string := "image/tiff";
  : @error xsl-fo:JAVA-EXCEPTION If Apache FOP throws an exception - i.e. if the input format is not correct/supported.
  :)
 declare function xsl-fo:generator($output-format as xs:string, $xsl-fo-document as node(), $classpath as xs:string+) as xs:base64Binary {
-  let $dir-separator as xs:string := file:path-separator()
-  return xsl-fo:generator-impl($output-format, $xsl-fo-document, fn:string-join($classpath, $dir-separator))
+  xsl-fo:generator-impl($output-format, $xsl-fo-document, $classpath)
 };
 
 (:~
@@ -167,5 +165,5 @@ declare %private function xsl-fo:find-apache-fop() as xs:string+ external;
  : @param $classpath The Java classpath with apache fop and all its dependencies.
  : @return The base64Binary Representation of document.
  :)
-declare %private function xsl-fo:generator-impl($output-format as xs:string, $xsl-fo-document as node(), $classpath as xs:string) as xs:base64Binary external;
+declare %private function xsl-fo:generator-impl($output-format as xs:string, $xsl-fo-document as node(), $classpath as xs:string+) as xs:base64Binary external;
 

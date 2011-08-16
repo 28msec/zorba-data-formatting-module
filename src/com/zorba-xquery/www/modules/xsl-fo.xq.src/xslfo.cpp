@@ -252,10 +252,16 @@ ItemSequence_t FindApacheFopFunction::evaluate(const ExternalFunction::Arguments
 ItemSequence_t GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t& args) const
 {
   Item classPathItem;
+  // assemble classpath (list of path concatenated with ":" or ";")
   Iterator_t lIter = args[2]->getIterator();
   lIter->open();
-  lIter->next(classPathItem);
+  std::ostringstream lClassPath;
+  while (lIter->next(classPathItem))
+  {
+    lClassPath << classPathItem.getStringValue() << File::getPathSeparator();
+  }
   lIter->close();
+
   lIter = args[0]->getIterator();
   lIter->open();
   Item outputFormat;
@@ -264,7 +270,7 @@ ItemSequence_t GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t
   jthrowable lException = 0;
   static JNIEnv* env;
   try {
-    env = JavaVMSingelton::getInstance(classPathItem.getStringValue().c_str())->getEnv();
+    env = JavaVMSingelton::getInstance(lClassPath.str().c_str())->getEnv();
     jstring outFotmatString = env->NewStringUTF(outputFormat.getStringValue().c_str());
     // Local variables
     std::ostringstream os;
