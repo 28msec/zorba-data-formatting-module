@@ -18,28 +18,37 @@
 #define JAVA_VM_SINGELTON
 
 #include <jni.h>
+#include <zorba/static_context.h>
 
-namespace zorba { namespace xslfo {
 
-  class VMOpenException {};
+namespace zorba { namespace jvm {
 
-  class JavaVMSingelton {
-  public:
-    static JavaVMSingelton* getInstance(const char* classPath);
-    static void destroyInstance();
-    virtual ~JavaVMSingelton();
-    JavaVM* getVM();
-    JNIEnv* getEnv();
-  protected:
-    JavaVMSingelton(const char* classPath);
-    static JavaVMSingelton* instance;
-    JavaVM* m_vm;
-    JNIEnv* m_env;
-    JavaVMInitArgs args;
-    JavaVMOption options[2];
-    char* awtOption;
-    char* classPathOption;
-  };
-}} //namespace zorba, xslfo
+class VMOpenException {};
+
+class JavaVMSingelton
+{
+public:
+  static JavaVMSingelton* getInstance(const char* classPath);
+  static JavaVMSingelton* getInstance(const zorba::StaticContext* aStaticContext);
+
+  virtual ~JavaVMSingelton();
+  JavaVM* getVM();
+  JNIEnv* getEnv();
+
+protected:
+  JavaVMSingelton(const char* classPath);
+  JavaVMSingelton(JavaVM *jvm, JNIEnv *env) : m_vm(jvm), m_env(env) {}
+  static String computeClassPath(const zorba::StaticContext* aStaticContext);
+
+  static JavaVMSingelton* instance;
+  JavaVM* m_vm;
+  JNIEnv* m_env;
+  JavaVMInitArgs args;
+  JavaVMOption options[2];
+  char* awtOption;
+  char* classPathOption;
+};
+
+}} //namespace zorba, jvm
 
 #endif // JAVA_VM_SINGELTON

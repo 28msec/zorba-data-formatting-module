@@ -14,19 +14,27 @@
  * limitations under the License.
  */
 
+#include <fstream>
 #include <iostream>
+#include <istream>
 #include <string>
 #include <cstdlib>
 #include <cstring>
 #include <sstream>
 
 #include "JavaVMSingelton.h"
+#include <zorba/util/path.h>
+#include <zorba/util/file.h>
+#include <zorba/zorba.h>
 
-namespace zorba { namespace xslfo {
+
+namespace zorba { namespace jvm {
 JavaVMSingelton* JavaVMSingelton::instance = NULL;
 
 JavaVMSingelton::JavaVMSingelton(const char* classPath)
 {
+  std::cout << "JavaVMSingelton::JavaVMSingelton classPath: " << classPath << "\n"; std::cout.flush();
+
   memset(&args, 0, sizeof(args));
   jint r;
   jint nOptions = 2;
@@ -62,23 +70,69 @@ JavaVMSingelton::JavaVMSingelton(const char* classPath)
 JavaVMSingelton::~JavaVMSingelton()
 {
   if (instance) {
+    delete instance;
     instance = NULL;
   }
-  m_vm->DestroyJavaVM();
-  delete[] awtOption;
-  delete[] classPathOption;
+  //m_vm->DestroyJavaVM();
+  if (awtOption)
+    delete[] awtOption;
+  if (classPathOption)
+    delete[] classPathOption;
 }
 
 JavaVMSingelton* JavaVMSingelton::getInstance(const char* classPath)
 {
-  if (instance == NULL) {
-    instance = new JavaVMSingelton(classPath);
+//#ifdef WIN32
+//  // If pointer to instance of JavaVMSingelton exists (true) then return instance pointer else look for
+//  // instance pointer in memory mapped pointer. If the instance pointer does not exist in
+//  // memory mapped pointer, return a newly created pointer to an instance of Abc.
+
+//  return instance ?
+//     instance : (instance = (JavaVMSingelton*) MemoryMappedPointers::getPointer("JavaVMSingelton")) ?
+//     instance : (instance = (JavaVMSingelton*) MemoryMappedPointers::createEntry("JavaVMSingelton",(void*)new JavaVMSingelton(classPath)));
+//#else
+
+
+  // If pointer to instance of JavaVMSingelton exists (true) then return instance pointer
+  // else return a newly created pointer to an instance of JavaVMSingelton.
+  if (instance == NULL)
+  {
+    JavaVM *jvms;
+    jsize nVMs;
+    if ( JNI_GetCreatedJavaVMs(&jvms, 1, &nVMs)==0 )
+    {
+      //std::cout << "Got JVMs " << nVMs << "\n"; std::cout.flush();
+      if (nVMs == 1)
+      {
+        JavaVM *jvm = jvms;
+        JNIEnv *env;
+        if( jvm->AttachCurrentThread((void **)&env, NULL) ==0 )
+        {
+          // if there is a jvm opened already by a diffrent dynamic lib
+          // make a singleton for this lib with that jvm
+          instance = new JavaVMSingelton(jvm, env);
+        }
+      }
+    }
+
+    if (instance == NULL)
+    {
+      instance = new JavaVMSingelton(classPath);
+    }
   }
+
   return instance;
 }
 
-void JavaVMSingelton::destroyInstance() {
-  delete instance;
+JavaVMSingelton* JavaVMSingelton::getInstance(const zorba::StaticContext* aStaticContext)
+{
+  if (instance == NULL)
+  {
+    String cp = computeClassPath(aStaticContext);
+    return getInstance(cp.c_str());
+  }
+
+  return instance;
 }
 
 JavaVM* JavaVMSingelton::getVM()
@@ -91,4 +145,88 @@ JNIEnv* JavaVMSingelton::getEnv()
   return m_env;
 }
 
-}} // namespace zorba, xslfo
+
+String JavaVMSingelton::computeClassPath(const zorba::StaticContext* aStaticContext)
+{
+  String cp;
+
+  // get classpath from global Properties
+  PropertiesGlobal * properties = Zorba::getInstance(NULL)->getProperties();
+  std::string globalClassPath;
+  properties->getJVMClassPath(globalClassPath);
+  cp += globalClassPath;
+
+  std::vector<String> lCPV;
+  aStaticContext->getFullLibPath(lCPV);
+
+  String pathSeparator(filesystem_path::get_path_separator());
+  String dirSeparator(filesystem_path::get_directory_separator());
+
+  for (std::vector<String>::iterator lIter = lCPV.begin();
+       lIter != lCPV.end(); ++lIter)
+  {
+    // verify it contains a jars dir
+    const filesystem_path baseFsPath((*lIter).str());
+    const filesystem_path jarsFsPath(std::string("jars"));
+    filesystem_path jarsDirPath(baseFsPath, jarsFsPath);
+
+    file jarsDir(jarsDirPath);
+
+    if ( jarsDir.exists() && jarsDir.is_directory())
+    {
+      std::vector<std::string> list;
+      jarsDir.lsdir(list);
+
+      for (std::vector<std::string>::iterator itemIter = list.begin();
+           itemIter != list.end(); ++itemIter)
+      {
+        filesystem_path itemLocalFS(*itemIter);
+        filesystem_path itemFS(jarsDirPath, itemLocalFS);
+        file itemFile(itemFS);
+        if ( itemFile.exists() && itemFile.is_file() )
+        {
+          std::string itemName = itemFile.get_path();
+          std::string suffix = "-classpath.txt";
+          size_t found;
+          found = itemName.rfind(suffix);
+          if (found!=std::string::npos &&
+              found + suffix.length() == itemName.length() )
+          {
+            std::auto_ptr<std::istream> pathFile;
+            pathFile.reset(new std::ifstream (itemName.c_str ()));
+            if (!pathFile->good() || pathFile->eof() )
+            {
+              std::cerr << "file {" << itemName << "} not found or not readable." << std::endl;
+              throw itemName;
+            }
+
+            // read file
+            char line[1024];
+            while( !pathFile->eof() && !pathFile->bad() && !pathFile->fail())
+            {
+              pathFile->getline(line, sizeof(line));
+              std::string lineStr(line);
+
+              if ( lineStr.size() == 0 )
+                continue;
+
+              //std::cout << "line: '" << lineStr << "'" << std::endl; std::cout.flush();
+
+              const std::string normalizedPath =
+                  filesystem_path::normalize_path( lineStr, jarsDirPath.get_path());
+
+              cp += pathSeparator + normalizedPath;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  properties->setJVMClassPath(cp.str());
+
+  //std::cout << "JavaVMSingelton::computeClassPath: '" << cp << "'" << std::endl; std::cout.flush();
+  return cp;
+}
+
+}} // namespace zorba, jvm

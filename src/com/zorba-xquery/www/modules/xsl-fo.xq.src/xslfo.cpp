@@ -42,16 +42,14 @@ class JavaException {
 
 namespace zorba { namespace xslfo {
  
-class GeneratePDFFunction : public NonContextualExternalFunction {
+class GeneratePDFFunction : public ContextualExternalFunction {
   private:
     const ExternalModule* theModule;
     ItemFactory* theFactory;
   public:
     GeneratePDFFunction(const ExternalModule* aModule) :
       theModule(aModule), theFactory(Zorba::getInstance(0)->getItemFactory()) {}
-    ~GeneratePDFFunction() {
-      JavaVMSingelton::destroyInstance();
-    }
+    ~GeneratePDFFunction() {}
 
   public:
     virtual String getURI() const { return theModule->getURI(); }
@@ -59,7 +57,9 @@ class GeneratePDFFunction : public NonContextualExternalFunction {
     virtual String getLocalName() const { return "generator-impl"; }
 
     virtual ItemSequence_t 
-    evaluate(const ExternalFunction::Arguments_t& args) const;
+    evaluate(const ExternalFunction::Arguments_t& args,
+             const zorba::StaticContext*,
+             const zorba::DynamicContext*) const;
 };
 
 class FindApacheFopFunction : public NonContextualExternalFunction {
@@ -249,20 +249,12 @@ ItemSequence_t FindApacheFopFunction::evaluate(const ExternalFunction::Arguments
   return ItemSequence_t(new VectorItemSequence(lClassPath));
 }
 
-ItemSequence_t GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t& args) const
+ItemSequence_t
+GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t& args,
+                              const zorba::StaticContext* aStaticContext,
+                              const zorba::DynamicContext* aDynamincContext) const
 {
-  Item classPathItem;
-  // assemble classpath (list of path concatenated with ":" or ";")
-  Iterator_t lIter = args[2]->getIterator();
-  lIter->open();
-  std::ostringstream lClassPath;
-  while (lIter->next(classPathItem))
-  {
-    lClassPath << classPathItem.getStringValue() << File::getPathSeparator();
-  }
-  lIter->close();
-
-  lIter = args[0]->getIterator();
+  Iterator_t lIter = args[0]->getIterator();
   lIter->open();
   Item outputFormat;
   lIter->next(outputFormat);
@@ -270,7 +262,7 @@ ItemSequence_t GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t
   jthrowable lException = 0;
   static JNIEnv* env;
   try {
-    env = JavaVMSingelton::getInstance(lClassPath.str().c_str())->getEnv();
+    env = zorba::jvm::JavaVMSingelton::getInstance(aStaticContext)->getEnv();
     jstring outFotmatString = env->NewStringUTF(outputFormat.getStringValue().c_str());
     // Local variables
     std::ostringstream os;
@@ -402,7 +394,7 @@ ItemSequence_t GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t
     String base64S = encoding::Base64::encode(lStream);
     Item lRes = theFactory->createBase64Binary(base64S.c_str(), base64S.length());
     return ItemSequence_t(new SingletonItemSequence(lRes));
-  } catch (VMOpenException&) {
+  } catch (zorba::jvm::VMOpenException&) {
     Item lQName = theFactory->createQName("http://www.zorba-xquery.com/modules/xsl-fo",
         "VM001");
     throw USER_EXCEPTION(lQName, "Could not start the Java VM (is the classpath set?)");
