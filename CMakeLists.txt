@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+MESSAGE (STATUS "******** BEGIN Configuring module Data-Formatting ********")
+
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT (zorba_data-formatting_module)
@@ -28,3 +30,5 @@ ADD_SUBDIRECTORY ("src")
 
 
 DONE_DECLARING_ZORBA_URIS ()
+
+MESSAGE (STATUS "******** END Configuring module Data-Formatting ********")
