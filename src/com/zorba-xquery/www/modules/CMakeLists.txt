@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-SET (ZORBA_WITH_FOP ON CACHE BOOL "Compile Zorba with XSL-FO support" FORCE)
-IF (ZORBA_WITH_FOP)
-
   IF (ZORBA_SUPPRESS_JAVA)
     MESSAGE (STATUS "ZORBA_SUPPRESS_JNI is true - not searching for Java")
     MESSAGE (STATUS "Building Zorba without XSL-FO support.")
@@ -107,18 +104,9 @@ IF (ZORBA_WITH_FOP)
         ADD_TEST_DIRECTORY("${PROJECT_SOURCE_DIR}/test")
 
       ELSE ( ALL_FOP )
-        MESSAGE (STATUS "fop.jar and all its dependecies not found skiping data-formating module")
+        MESSAGE (STATUS "fop.jar and all its dependecies were not found skiping data-formating module")
       ENDIF ( ALL_FOP )
 
-    ELSE (JNI_FOUND)
-      IF (ZORBA_WITH_FOP)
-        MESSAGE(FATAL_ERROR "Could not find Java and/or JNI. Please install a JDK or compile Zorba with XSL-FO support by setting ZORBA_WITH_FOP to false.")
-      ENDIF (ZORBA_WITH_FOP)
-      MESSAGE ( STATUS "Not generating XSL-FO support: jni headers not found.")
     ENDIF(JNI_FOUND)
   
   ENDIF(ZORBA_SUPPRESS_JAVA)
-ELSEIF (ZORBA_WITH_FOP)
-    #SET(ZORBA_WITH_FOP OFF CACHE BOOL "Compile Zorba with XSL-FO support." FORCE)
-    MESSAGE(STATUS "Building Zorba without XSL-FO support.")
-ENDIF (ZORBA_WITH_FOP)
