@@ -12,107 +12,101 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#
-# JNI JAVA
-#
-IF (ZORBA_SUPPRESS_JAVA)
-  MESSAGE (STATUS "ZORBA_SUPPRESS_JNI is true - not searching for Java")
-ELSE (ZORBA_SUPPRESS_JAVA)
-  IF (NOT ZORBA_WITH_FOP)
-    MESSAGE (STATUS "Looking for Java")
-    FIND_PACKAGE(Java)
+  IF (ZORBA_SUPPRESS_JAVA)
+    MESSAGE (STATUS "ZORBA_SUPPRESS_JNI is true - not searching for Java")
+    MESSAGE (STATUS "Building Zorba without XSL-FO support.")
+  ELSE (ZORBA_SUPPRESS_JAVA)
 
-    MESSAGE (STATUS "Looking for JNI")
+    FIND_PACKAGE(Java)
     FIND_PACKAGE(JNI)  
 
     IF (JNI_FOUND)
+    
       IF (NOT DEFINED XSL_FOP_HOME)
-        IF (WIN32) 
-          MESSAGE (STATUS "Variable XSL_FOP_HOME not defined, trying defaults: " ${Java_LIBRARIES})
-          SET (XSL_FOP_HOME ${Java_LIBRARIES})
-        ELSE (WIN32) 
-          MESSAGE (STATUS "Variable XSL_FOP_HOME not defined, trying defaults: " ${Java_LIBRARIES} " /usr/share/java/ /usr/share/java/fop/")
-          SET (XSL_FOP_HOME /usr/share/java/ /usr/share/java/fop/ ${Java_LIBRARIES})
-        ENDIF (WIN32) 
+        IF (DEFINED ENV{XSL_FOP_HOME})
+          SET(XSL_FOP_HOME $ENV{XSL_FOP_HOME})
+        ENDIF (DEFINED ENV{XSL_FOP_HOME})
       ENDIF (NOT DEFINED XSL_FOP_HOME)
-
-      MESSAGE (STATUS "XSL-FOP HOME :" ${XSL_FOP_HOME} )
       
+      IF (NOT DEFINED XSL_FOP_HOME)
+        IF (WIN32)
+          MESSAGE (STATUS "Environment variable XSL_FOP_HOME not defined, trying default: C:\\dev\\libraries\\fop-1.0")
+          SET (XSL_FOP_HOME "C:\\dev\\libraries\\fop-1.0")
+        ELSE (WIN32)
+          MESSAGE (STATUS "Environment variable XSL_FOP_HOME not defined, trying defaults: " ${Java_LIBRARIES} " /usr/share/java/ /usr/share/java/fop/")
+          SET (XSL_FOP_HOME "/usr/share/java/ /usr/share/java/fop/ ${Java_LIBRARIES}")
+        ENDIF (WIN32)
+      ENDIF (NOT DEFINED XSL_FOP_HOME)
+      
+      STRING(REGEX REPLACE "\\\\" "/" XSL_FOP_HOME "${XSL_FOP_HOME}")
+      
+      MESSAGE (STATUS "XSL-FOP HOME: " ${XSL_FOP_HOME} )
       FIND_FILE( FOP_JAR NAMES fop.jar 
         PATHS ${XSL_FOP_HOME} ${XSL_FOP_HOME}/build )
-
       FIND_FILE( FOP_D1_JAR NAMES avalon-framework.jar
         PATHS ${XSL_FOP_HOME} ${XSL_FOP_HOME}/lib )
-
       FIND_FILE( FOP_D2_JAR NAMES batik-all.jar
         PATHS ${XSL_FOP_HOME} ${XSL_FOP_HOME}/lib )
-
       FIND_FILE( FOP_D3_JAR NAMES commons-io.jar
         PATHS ${XSL_FOP_HOME} ${XSL_FOP_HOME}/lib )
-
       FIND_FILE( FOP_D4_JAR NAMES commons-logging.jar
         PATHS ${XSL_FOP_HOME} ${XSL_FOP_HOME}/lib )
-
       FIND_FILE( FOP_D5_JAR NAMES serializer.jar
         PATHS ${XSL_FOP_HOME} ${XSL_FOP_HOME}/lib )
-
       FIND_FILE( FOP_D6_JAR NAMES xalan.jar xalan2.jar
         PATHS ${XSL_FOP_HOME} ${XSL_FOP_HOME}/lib )
-
       FIND_FILE( FOP_D7_JAR NAMES xmlgraphics-commons.jar
         PATHS ${XSL_FOP_HOME} ${XSL_FOP_HOME}/lib )
 
-      IF( EXISTS ${FOP_JAR} AND EXISTS ${FOP_D1_JAR} AND EXISTS ${FOP_D2_JAR} AND
-          EXISTS ${FOP_D3_JAR} AND EXISTS ${FOP_D4_JAR} AND EXISTS ${FOP_D5_JAR} AND
-          EXISTS ${FOP_D6_JAR} AND EXISTS ${FOP_D7_JAR})
+      #MULTIPLE EXISTS CAN'T BE USED IN AN *IF* COMMAND, LOOKS LIKE A BUG ON CMAKE
+      SET(ALL_FOP FALSE)
+      IF ( EXISTS ${FOP_JAR} )
+        IF ( EXISTS ${FOP_D1_JAR} )
+          IF ( EXISTS ${FOP_D2_JAR} )
+            IF ( EXISTS ${FOP_D3_JAR} )
+              IF ( EXISTS ${FOP_D4_JAR} )
+                IF ( EXISTS ${FOP_D5_JAR} )
+                  IF ( EXISTS ${FOP_D6_JAR} )
+                    IF ( EXISTS ${FOP_D7_JAR} )
+                      SET(ALL_FOP TRUE)
+                    ENDIF ( EXISTS ${FOP_D7_JAR} )
+                  ENDIF ( EXISTS ${FOP_D6_JAR} )
+                ENDIF ( EXISTS ${FOP_D5_JAR} )
+              ENDIF ( EXISTS ${FOP_D4_JAR} )
+            ENDIF ( EXISTS ${FOP_D3_JAR} )
+          ENDIF ( EXISTS ${FOP_D2_JAR} )
+        ENDIF ( EXISTS ${FOP_D1_JAR} )
+      ENDIF ( EXISTS ${FOP_JAR} )
+      MESSAGE(STATUS "ALL_FOP:" ${ALL_FOP})
 
-        #SET (ZORBA_WITH_FOP ON CACHE BOOL "Compile Zorba with XSL-FO support" FORCE)
-        #IF (ZORBA_WITH_FOP)
-          INCLUDE (CMakeJavaInformation )
-          MESSAGE(STATUS "Generating Java API")
-          EXECUTE_PROCESS (
-            COMMAND ${JAVA_RUNTIME} -version
-            RESULT_VARIABLE JAVA_VERSION
-            OUTPUT_QUIET
-            ERROR_QUIET
-          )
-          #MESSAGE (STATUS "JNI found at    :${JAVA_INCLUDE_PATH}")
-          #MESSAGE (STATUS "Java Library at :${JAVA_JVM_LIBRARY}")
-          MESSAGE (STATUS "Building Zorba with XSL-FO support.")
-    
-          INCLUDE_DIRECTORIES (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
-          INCLUDE_DIRECTORIES (${JAVA_INCLUDE_PATH})
-          DECLARE_ZORBA_MODULE (URI "http://www.zorba-xquery.com/modules/xsl-fo" VERSION 1.0 FILE "xsl-fo.xq" LINK_LIBRARIES "${JAVA_JVM_LIBRARY}")
+      IF ( ALL_FOP )
+        MESSAGE(STATUS "FOP Libraries Found.")
+        INCLUDE (CMakeJavaInformation )
+        EXECUTE_PROCESS (
+          COMMAND ${JAVA_RUNTIME} -version
+          RESULT_VARIABLE JAVA_VERSION
+          OUTPUT_QUIET
+          ERROR_QUIET
+        )
 
-          DECLARE_ZORBA_JAR(FILE ${FOP_JAR} EXTERNAL)
-          DECLARE_ZORBA_JAR(FILE ${FOP_D1_JAR} EXTERNAL)
-          DECLARE_ZORBA_JAR(FILE ${FOP_D2_JAR} EXTERNAL)
-          DECLARE_ZORBA_JAR(FILE ${FOP_D3_JAR} EXTERNAL)
-          DECLARE_ZORBA_JAR(FILE ${FOP_D4_JAR} EXTERNAL)
-          DECLARE_ZORBA_JAR(FILE ${FOP_D5_JAR} EXTERNAL)
-          DECLARE_ZORBA_JAR(FILE ${FOP_D6_JAR} EXTERNAL)
-          DECLARE_ZORBA_JAR(FILE ${FOP_D7_JAR} EXTERNAL)
+        INCLUDE_DIRECTORIES (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
+        INCLUDE_DIRECTORIES (${JAVA_INCLUDE_PATH})
+        DECLARE_ZORBA_MODULE (URI "http://www.zorba-xquery.com/modules/xsl-fo" VERSION 1.0 FILE "xsl-fo.xq" LINK_LIBRARIES "${JAVA_JVM_LIBRARY}")
 
-          ADD_TEST_DIRECTORY("${PROJECT_SOURCE_DIR}/test")
-        #ENDIF (ZORBA_WITH_FOP)
-      ELSE( EXISTS ${FOP_JAR} AND EXISTS ${FOP_D1_JAR} AND EXISTS ${FOP_D2_JAR} AND
-          EXISTS ${FOP_D3_JAR} AND EXISTS ${FOP_D4_JAR} AND EXISTS ${FOP_D5_JAR} AND
-          EXISTS ${FOP_D6_JAR} AND EXISTS ${FOP_D7_JAR} )
-        MESSAGE (STATUS "fop.jar and all its dependecies not found skiping data-formating module")
-      ENDIF( EXISTS ${FOP_JAR} AND EXISTS ${FOP_D1_JAR} AND EXISTS ${FOP_D2_JAR} AND
-          EXISTS ${FOP_D3_JAR} AND EXISTS ${FOP_D4_JAR} AND EXISTS ${FOP_D5_JAR} AND
-          EXISTS ${FOP_D6_JAR} AND EXISTS ${FOP_D7_JAR} )
+        DECLARE_ZORBA_JAR(FILE ${FOP_JAR} EXTERNAL)
+        DECLARE_ZORBA_JAR(FILE ${FOP_D1_JAR} EXTERNAL)
+        DECLARE_ZORBA_JAR(FILE ${FOP_D2_JAR} EXTERNAL)
+        DECLARE_ZORBA_JAR(FILE ${FOP_D3_JAR} EXTERNAL)
+        DECLARE_ZORBA_JAR(FILE ${FOP_D4_JAR} EXTERNAL)
+        DECLARE_ZORBA_JAR(FILE ${FOP_D5_JAR} EXTERNAL)
+        DECLARE_ZORBA_JAR(FILE ${FOP_D6_JAR} EXTERNAL)
+        DECLARE_ZORBA_JAR(FILE ${FOP_D7_JAR} EXTERNAL)
+        ADD_TEST_DIRECTORY("${PROJECT_SOURCE_DIR}/test")
 
-    ELSE (JNI_FOUND)
-      IF (ZORBA_WITH_FOP)
-        MESSAGE(FATAL_ERROR "Could not find Java and/or JNI. Please install a JDK or compile Zorba with XSL-FO support by setting ZORBA_WITH_FOP to false.")
-      ENDIF (ZORBA_WITH_FOP)
-      MESSAGE ( STATUS "Not generating XSL-FO support: jni headers not found.")
+      ELSE ( ALL_FOP )
+        MESSAGE (STATUS "fop.jar and all its dependecies were not found skiping data-formating module")
+      ENDIF ( ALL_FOP )
+
     ENDIF(JNI_FOUND)
-  ELSE (NOT ZORBA_WITH_FOP)
-      #SET(ZORBA_WITH_FOP OFF CACHE BOOL "Compile Zorba with XSL-FO support." FORCE)
-      MESSAGE(STATUS "Building Zorba without XSL-FO support.")
-  ENDIF (NOT ZORBA_WITH_FOP)
   
-ENDIF(ZORBA_SUPPRESS_JAVA)
-MESSAGE(STATUS "")
+  ENDIF(ZORBA_SUPPRESS_JAVA)
