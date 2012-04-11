@@ -17,18 +17,33 @@ MESSAGE (STATUS "******** BEGIN Configuring module Data-Formatting ********")
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT (zorba_data-formatting_module)
-ENABLE_TESTING ()
-INCLUDE (CTest)
-
-SET_CMAKE_MODULE_PATH ()
-
-FIND_PACKAGE (Zorba REQUIRED HINTS "${ZORBA_BUILD_DIR}")
-INCLUDE ("${Zorba_USE_FILE}")
-
-ADD_SUBDIRECTORY ("src")
-#ADD_TEST_DIRECTORY ("${CMAKE_SOURCE_DIR}/test")
 
 
-DONE_DECLARING_ZORBA_URIS ()
+# The util-jvm tool finds Java and JNI, so all standard cached JAVA_
+# variables will be set. util-jvm also caches Java_FOUND and JNI_FOUND
+# for us.
+FIND_PACKAGE (zorba_util-jvm_module REQUIRED)
+
+IF (JNI_FOUND)
+  INCLUDE_DIRECTORIES (${zorba_util-jvm_module_INCLUDE_DIRS})
+  
+  ENABLE_TESTING ()
+  INCLUDE (CTest)
+
+  SET_CMAKE_MODULE_PATH ()
+
+  FIND_PACKAGE (Zorba REQUIRED HINTS "${ZORBA_BUILD_DIR}")
+  INCLUDE ("${Zorba_USE_FILE}")
+
+  ADD_SUBDIRECTORY ("src")
+  #ADD_TEST_DIRECTORY ("${CMAKE_SOURCE_DIR}/test")
+
+  DONE_DECLARING_ZORBA_URIS ()
+
+ELSE (JNI_FOUND)
+  MESSAGE ( STATUS "Java and/or JNI not found; skipping data-formating module.")
+ENDIF(JNI_FOUND)
+
+
 
 MESSAGE (STATUS "******** END Configuring module Data-Formatting ********")

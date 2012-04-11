@@ -61,6 +61,7 @@ xquery version "3.0";
  :)
 module namespace xsl-fo = "http://www.zorba-xquery.com/modules/xsl-fo";
 
+import module namespace util-jvm = "http://www.zorba-xquery.com/modules/util-jvm";
 
 declare namespace err = "http://www.w3.org/2005/xqt-errors";
 

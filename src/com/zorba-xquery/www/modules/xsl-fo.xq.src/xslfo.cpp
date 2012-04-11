@@ -31,7 +31,7 @@
 #include <zorba/vector_item_sequence.h>
 #include <zorba/zorba.h>
 
-#include "JavaVMSingelton.h"
+#include "JavaVMSingleton.h"
 
 #define XSL_MODULE_NAMESPACE "http://www.zorba-xquery.com/modules/xsl-fo"
 
@@ -262,7 +262,7 @@ GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t& args,
   jthrowable lException = 0;
   static JNIEnv* env;
   try {
-    env = zorba::jvm::JavaVMSingelton::getInstance(aStaticContext)->getEnv();
+    env = zorba::jvm::JavaVMSingleton::getInstance(aStaticContext)->getEnv();
     jstring outFotmatString = env->NewStringUTF(outputFormat.getStringValue().c_str());
     // Local variables
     std::ostringstream os;
