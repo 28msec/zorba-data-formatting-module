@@ -84,7 +84,9 @@
 
     INCLUDE_DIRECTORIES (${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
     INCLUDE_DIRECTORIES (${JAVA_INCLUDE_PATH})
-    DECLARE_ZORBA_MODULE (URI "http://www.zorba-xquery.com/modules/xsl-fo" VERSION 1.0 FILE "xsl-fo.xq" LINK_LIBRARIES "${JAVA_JVM_LIBRARY}")
+    DECLARE_ZORBA_MODULE (URI "http://www.zorba-xquery.com/modules/xsl-fo"
+      VERSION 1.0 FILE "xsl-fo.xq"
+      LINK_LIBRARIES "${JAVA_JVM_LIBRARY}" ${zorba_util-jvm_module_LIBRARIES})
 
     DECLARE_ZORBA_JAR(FILE ${FOP_JAR} EXTERNAL)
     DECLARE_ZORBA_JAR(FILE ${FOP_D1_JAR} EXTERNAL)
