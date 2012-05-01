@@ -22,28 +22,32 @@ PROJECT (zorba_data-formatting_module)
 # The util-jvm tool finds Java and JNI, so all standard cached JAVA_
 # variables will be set. util-jvm also caches Java_FOUND and JNI_FOUND
 # for us.
-FIND_PACKAGE (zorba_util-jvm_module REQUIRED)
+FIND_PACKAGE (zorba_util-jvm_module QUIET)
 
-IF (JNI_FOUND)
-  INCLUDE_DIRECTORIES (${zorba_util-jvm_module_INCLUDE_DIRS})
-  
-  ENABLE_TESTING ()
-  INCLUDE (CTest)
+IF (zorba_util-jvm_module_FOUND)
+  IF (JNI_FOUND)
+    INCLUDE_DIRECTORIES (${zorba_util-jvm_module_INCLUDE_DIRS})
 
-  SET_CMAKE_MODULE_PATH ()
+    ENABLE_TESTING ()
+    INCLUDE (CTest)
 
-  FIND_PACKAGE (Zorba REQUIRED HINTS "${ZORBA_BUILD_DIR}")
-  INCLUDE ("${Zorba_USE_FILE}")
+    SET_CMAKE_MODULE_PATH ()
 
-  ADD_SUBDIRECTORY ("src")
-  #ADD_TEST_DIRECTORY ("${CMAKE_SOURCE_DIR}/test")
+    FIND_PACKAGE (Zorba REQUIRED HINTS "${ZORBA_BUILD_DIR}")
+    INCLUDE ("${Zorba_USE_FILE}")
 
-  DONE_DECLARING_ZORBA_URIS ()
+    ADD_SUBDIRECTORY ("src")
+    #ADD_TEST_DIRECTORY ("${CMAKE_SOURCE_DIR}/test")
 
-ELSE (JNI_FOUND)
-  MESSAGE ( STATUS "Java and/or JNI not found; skipping data-formating module.")
-ENDIF(JNI_FOUND)
+    DONE_DECLARING_ZORBA_URIS ()
 
+  ELSE (JNI_FOUND)
+    MESSAGE ( STATUS "Java and/or JNI not found; skipping data-formating module.")
+  ENDIF(JNI_FOUND)
+
+ELSE (zorba_util-jvm_module_FOUND)
+  MESSAGE (STATUS "Zorba's util-jvm module not found; skipping data-formatting module.")
+ENDIF (zorba_util-jvm_module_FOUND)
 
 
 MESSAGE (STATUS "******** END Configuring module Data-Formatting ********")
