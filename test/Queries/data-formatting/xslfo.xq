@@ -21,7 +21,6 @@ let $pdf := xs:string($pdfBase64Binary)
 let $len := fn:string-length($pdf)
 return 
   <pdf>
-    <len>  { $len }</len>
+    <len>  { $len gt 6000 }</len>
     <start>{ fn:substring($pdf, 1, 10)}</start>
-    <end>  { fn:substring($pdf, $len -10, $len)}</end>
   </pdf>
