@@ -39,7 +39,7 @@
     PATHS ${XSL_FOP_HOME} )
   FIND_FILE( FOP_D1_JAR NAMES avalon-framework.jar avalon-framework-4.2.0.jar
     PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D2_JAR NAMES batik-all.jar /batik-all-1.7.jar
+  FIND_FILE( FOP_D2_JAR NAMES batik-all.jar batik-all-1.7.jar
     PATHS ${XSL_FOP_HOME} )
   FIND_FILE( FOP_D3_JAR NAMES commons-io.jar commons-io-1.3.1.jar
     PATHS ${XSL_FOP_HOME} )
