@@ -26,22 +26,31 @@
       MESSAGE (STATUS "Environment variable XSL_FOP_HOME not defined, trying default: C:\\dev\\libraries\\fop-1.0")
       SET (XSL_FOP_HOME "C:\\dev\\libraries\\fop-1.0 C:\\dev\\libraries\\fop-1.0\\lib")
     ELSE (WIN32)
-      MESSAGE (STATUS "Environment variable XSL_FOP_HOME not defined, trying defaults: " ${Java_LIBRARIES} " /usr/share/java/ /usr/share/java/fop/")
-	  SET (XSL_FOP_HOME /usr/share/java/ /usr/share/java/fop/ ${Java_LIBRARIES})
+      SET (UNIX_FOP_DEFAULTS /usr/share/java/ /usr/share/java/fop/ /opt/local/share/java/fop/1.0/lib /opt/local/share/java/fop/1.0/build/ ${Java_LIBRARIES})
+      MESSAGE (STATUS "Environment variable XSL_FOP_HOME not defined, trying defaults: " ${UNIX_FOP_DEFAULTS})
+      SET (XSL_FOP_HOME ${UNIX_FOP_DEFAULTS})
     ENDIF (WIN32)
   ENDIF (NOT DEFINED XSL_FOP_HOME)
   
   STRING(REGEX REPLACE "\\\\" "/" XSL_FOP_HOME "${XSL_FOP_HOME}")
   
   MESSAGE (STATUS "XSL-FOP HOME: " ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_JAR    NAMES fop.jar  				  PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D1_JAR NAMES avalon-framework.jar    PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D2_JAR NAMES batik-all.jar           PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D3_JAR NAMES commons-io.jar          PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D4_JAR NAMES commons-logging.jar     PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D5_JAR NAMES serializer.jar          PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D6_JAR NAMES xalan.jar xalan2.jar    PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D7_JAR NAMES xmlgraphics-commons.jar PATHS ${XSL_FOP_HOME} )
+  FIND_FILE( FOP_JAR    NAMES fop.jar
+    PATHS ${XSL_FOP_HOME} )
+  FIND_FILE( FOP_D1_JAR NAMES avalon-framework.jar avalon-framework-4.2.0.jar
+    PATHS ${XSL_FOP_HOME} )
+  FIND_FILE( FOP_D2_JAR NAMES batik-all.jar /batik-all-1.7.jar
+    PATHS ${XSL_FOP_HOME} )
+  FIND_FILE( FOP_D3_JAR NAMES commons-io.jar commons-io-1.3.1.jar
+    PATHS ${XSL_FOP_HOME} )
+  FIND_FILE( FOP_D4_JAR NAMES commons-logging.jar commons-logging-1.0.4.jar
+    PATHS ${XSL_FOP_HOME} )
+  FIND_FILE( FOP_D5_JAR NAMES serializer.jar serializer-2.7.0.jar
+    PATHS ${XSL_FOP_HOME} )
+  FIND_FILE( FOP_D6_JAR NAMES xalan.jar xalan2.jar xalan-2.7.0.jar
+    PATHS ${XSL_FOP_HOME} )
+  FIND_FILE( FOP_D7_JAR NAMES xmlgraphics-commons.jar xmlgraphics-commons-1.4.jar
+    PATHS ${XSL_FOP_HOME} )
 
   #MULTIPLE EXISTS CAN'T BE USED IN AN *IF* COMMAND, LOOKS LIKE A BUG ON CMAKE
   SET(ALL_FOP FALSE)
