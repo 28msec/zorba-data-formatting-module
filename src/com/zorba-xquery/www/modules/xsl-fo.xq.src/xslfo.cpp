@@ -62,36 +62,15 @@ class GeneratePDFFunction : public ContextualExternalFunction {
              const zorba::DynamicContext*) const;
 };
 
-class FindApacheFopFunction : public NonContextualExternalFunction {
-  private:
-    const ExternalModule* theModule;
-    ItemFactory* theFactory;
-  private:
-    void throwError(std::string aName) const;
-  public:
-    FindApacheFopFunction(const ExternalModule* aModule) :
-      theModule(aModule), theFactory(Zorba::getInstance(0)->getItemFactory()) {}
-
-    virtual String getURI() const { return theModule->getURI(); }
-
-    virtual String getLocalName() const { return "find-apache-fop"; }
-
-    virtual ItemSequence_t 
-    evaluate(const ExternalFunction::Arguments_t& args) const;
-};
-
 class XSLFOModule : public ExternalModule {
   private:
     ExternalFunction* generatePDF;
-    ExternalFunction* findFop;
   public:
     XSLFOModule() :
-      generatePDF(new GeneratePDFFunction(this)),
-      findFop(new FindApacheFopFunction(this))
+      generatePDF(new GeneratePDFFunction(this))
   {}
     ~XSLFOModule() {
       delete generatePDF;
-      delete findFop;
     }
 
     virtual String getURI() const { return XSL_MODULE_NAMESPACE; }
@@ -106,147 +85,8 @@ class XSLFOModule : public ExternalModule {
 ExternalFunction* XSLFOModule::getExternalFunction(const String& localName) {
   if (localName == "generator-impl") {
     return generatePDF;
-  } else if (localName == "find-apache-fop") {
-    return findFop;
-  }
+  } 
   return 0;
-}
-
-void FindApacheFopFunction::throwError(std::string aName) const {
-  Item lQName = theFactory->createQName("http://www.zorba-xquery.com/modules/xsl-fo",
-      "JAR-NOT-FOUND");
-  throw USER_EXCEPTION(lQName, aName);
-}
-
-ItemSequence_t FindApacheFopFunction::evaluate(const ExternalFunction::Arguments_t& args) const
-{
-  std::string lDirectorySeparator(File::getDirectorySeparator());
-  std::string lFopHome;
-  {
-    char* lFopHomeEnv = getenv("FOP_HOME");
-    if (lFopHomeEnv != 0) {
-      lFopHome = lFopHomeEnv;
-    }
-#ifdef APPLE
-    else {
-      // If Apache FOP is installed with Mac Ports, FOP
-      // is typicaly installed in /opt/local/share/java/fop,
-      // so we check here, if the installation directory can
-      // be found in this directory.
-      std::string lFopPath("/opt/local/share/java/fop/");
-      File_t lRootDir = File::createFile(lFopPath);
-      if (lRootDir->exists() && lRootDir->isDirectory()) {
-        DirectoryIterator_t lFiles = lRootDir->files();
-        std::string lFileName;
-        // The FOP directory is in a subdirectory with the version
-        // number - so we check all subdirectories to get the final
-        // path.
-        while (lFiles->next(lFileName)) {
-          File_t lFile = File::createFile(lFopPath + lFileName);
-          if (lFile->isDirectory()) {
-            std::stringstream lStr(lFileName);
-            double lDirDouble = 0.0;
-            if (lStr >> lDirDouble) {
-              if (lDirDouble != 0.0) {
-                lFopHome = lFopPath + lFileName;
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
-#endif
-  }
-  std::string lFopLibDir;
-  {
-    char* lEnv = getenv("FOP_LIB_DIR");
-    if (lEnv != 0) {
-      lFopLibDir = lEnv;
-    }
-#ifdef LINUX
-    // on a Ubuntu installation, all required
-    // jar files should be in /usr/share/java
-    // if Apache FOP is installed.
-    else {
-      lFopLibDir = "/usr/share/java";
-    }
-#endif
-  }
-  // If neither a path to the fop install dir, nor a path
-  // to the jar files was found so far, we throw an exception.
-  if (lFopHome == "" && lFopLibDir == "") {
-    throwError("None of the environment variables FOP_HOME and FOP_LIB_DIR have been set.");
-  }
-  std::string lFopJarFile;
-  {
-    // Here we look for the fop.jar file, which should be either in $FOP_HOME/build or 
-    // in the directory, where all jar files are.
-    lFopJarFile = lFopHome + lDirectorySeparator + "build" + lDirectorySeparator + "fop.jar";
-    std::string lFopJarFile1 = lFopJarFile;
-    File_t lJarFile = File::createFile(lFopJarFile);
-    if (!lJarFile->exists()) {
-      lFopJarFile = lFopLibDir + lDirectorySeparator + "fop.jar";
-      lJarFile = File::createFile(lFopJarFile);
-      if (!lJarFile->exists()) {
-        std::string errmsg = "Could not find fop.jar. If you are using Ubuntu or Mac OS X, please make sure, ";
-        errmsg += "that you have installed it, else make sure, that you have set the envroinment variable ";
-        errmsg += "FOP_HOME or FOP_LIB_DIR correctly. Tried '";
-        errmsg +=  lFopJarFile1;
-        errmsg += "' and '";
-        errmsg += lFopJarFile;
-        errmsg += "'.";
-        throwError(errmsg);
-      }
-    }
-  }
-  std::vector<Item> lClassPath;
-  lClassPath.push_back(theFactory->createString(lFopJarFile));
-  {
-    std::string lJarDir = lFopLibDir;
-    if (lFopHome != "")
-      lJarDir = lFopHome + lDirectorySeparator + "lib";
-    // This is a list of all jar files, Apache Fop depends on.
-    std::list<std::string> lDeps;
-    lDeps.push_back("avalon-framework");
-    lDeps.push_back("batik-all");
-    lDeps.push_back("commons-io");
-    lDeps.push_back("commons-logging");
-    lDeps.push_back("serializer");
-    lDeps.push_back("xalan");
-    lDeps.push_back("xmlgraphics-commons");
-
-    File_t lJarDirF = File::createFile(lJarDir);
-    DirectoryIterator_t lFiles = lJarDirF->files();
-    std::string lFile; size_t count = 0;
-    // We check for all files, if it is a potential dependency and add it to
-    // the result
-    while (lFiles->next(lFile)) {
-      // If the file is not a jar file, we don't do anything
-      if (lFile.substr(lFile.size() - 4, std::string::npos) != ".jar")
-        continue;
-      for (std::list<std::string>::iterator i = lDeps.begin(); i != lDeps.end(); ++i) {
-        std::string lSub = lFile.substr(0, i->size());
-        if (lSub == *i) {
-          std::string lFull = lJarDir + lDirectorySeparator + lFile;
-          File_t f = File::createFile(lFull);
-          if (f->exists() && !f->isDirectory()) {
-            lClassPath.push_back(theFactory->createString(lFull));
-            // We count all jar files we add to the dependencies.
-            ++count;
-            break;
-          }
-        }
-      }
-    }
-    // Last, we check if all dependencies are found
-    if (count < lDeps.size()) {
-      std::string errmsg = "Could not find ";
-      errmsg += lDeps.front();
-      throwError(errmsg);
-    }
-  }
-  return ItemSequence_t(new VectorItemSequence(lClassPath));
 }
 
 ItemSequence_t
