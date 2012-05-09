@@ -25,6 +25,8 @@ PROJECT (zorba_data-formatting_module)
 FIND_PACKAGE (zorba_util-jvm_module QUIET)
 
 IF (zorba_util-jvm_module_FOUND)
+  INCLUDE ("${zorba_util-jvm_module_USE_FILE}")
+
   IF (JNI_FOUND)
     INCLUDE_DIRECTORIES (${zorba_util-jvm_module_INCLUDE_DIRS})
 

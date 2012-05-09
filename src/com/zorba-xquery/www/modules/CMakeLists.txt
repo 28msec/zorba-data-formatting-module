@@ -12,9 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
-
   IF (NOT DEFINED XSL_FOP_HOME)
     IF (DEFINED ENV{XSL_FOP_HOME})
       SET(XSL_FOP_HOME $ENV{XSL_FOP_HOME})
@@ -23,36 +20,35 @@
   
   IF (NOT DEFINED XSL_FOP_HOME)
     IF (WIN32)
-      MESSAGE (STATUS "Environment variable XSL_FOP_HOME not defined, trying default: C:\\dev\\libraries\\fop-1.0")
-      SET (XSL_FOP_HOME "C:\\dev\\libraries\\fop-1.0 C:\\dev\\libraries\\fop-1.0\\lib")
+      SET (XSL_FOP_HOME "C:\\dev\\libraries\\fop-1.0 C:\\dev\\libraries\\fop-1.0\\lib C:\\dev\\libraries\\fop-1.0\\build")
     ELSE (WIN32)
-      SET (UNIX_FOP_DEFAULTS /usr/share/java/ /usr/share/java/fop/ /opt/local/share/java/fop/1.0/lib /opt/local/share/java/fop/1.0/build/ ${Java_LIBRARIES})
-      MESSAGE (STATUS "Environment variable XSL_FOP_HOME not defined, trying defaults: " ${UNIX_FOP_DEFAULTS})
-      SET (XSL_FOP_HOME ${UNIX_FOP_DEFAULTS})
+      SET (XSL_FOP_HOME /usr/share/java/ /usr/share/java/fop/ /opt/local/share/java/fop/1.0 /opt/local/share/java/fop/1.0 ${Java_LIBRARIES})
     ENDIF (WIN32)
+    MESSAGE (STATUS "XSL_FOP_HOME not defined, trying defaults: ${XSL_FOP_HOME}")
   ENDIF (NOT DEFINED XSL_FOP_HOME)
   
   STRING(REGEX REPLACE "\\\\" "/" XSL_FOP_HOME "${XSL_FOP_HOME}")
   
-  MESSAGE (STATUS "XSL-FOP HOME: " ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_JAR    NAMES fop.jar
-    PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D1_JAR NAMES avalon-framework.jar avalon-framework-4.2.0.jar
-    PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D2_JAR NAMES batik-all.jar batik-all-1.7.jar
-    PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D3_JAR NAMES commons-io.jar commons-io-1.3.1.jar
-    PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D4_JAR NAMES commons-logging.jar commons-logging-1.0.4.jar
-    PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D5_JAR NAMES serializer.jar serializer-2.7.0.jar
-    PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D6_JAR NAMES xalan.jar xalan2.jar xalan-2.7.0.jar
-    PATHS ${XSL_FOP_HOME} )
-  FIND_FILE( FOP_D7_JAR NAMES xmlgraphics-commons.jar xmlgraphics-commons-1.4.jar
-    PATHS ${XSL_FOP_HOME} )
+  MESSAGE (STATUS "XSL-FOP HOME: ${XSL_FOP_HOME}")
+  ZORBA_FIND_JAR ( FOP_JAR    NAMES fop
+    PATHS ${XSL_FOP_HOME} PATH_SUFFIXES build)
+  ZORBA_FIND_JAR ( FOP_D1_JAR NAMES avalon-framework
+    PATHS ${XSL_FOP_HOME} PATH_SUFFIXES lib )
+  ZORBA_FIND_JAR ( FOP_D2_JAR NAMES batik-all
+    PATHS ${XSL_FOP_HOME} PATH_SUFFIXES lib )
+  ZORBA_FIND_JAR ( FOP_D3_JAR NAMES commons-io
+    PATHS ${XSL_FOP_HOME} PATH_SUFFIXES lib )
+  ZORBA_FIND_JAR ( FOP_D4_JAR NAMES commons-logging
+    PATHS ${XSL_FOP_HOME} PATH_SUFFIXES lib )
+  ZORBA_FIND_JAR ( FOP_D5_JAR NAMES serializer
+    PATHS ${XSL_FOP_HOME} PATH_SUFFIXES lib )
+  ZORBA_FIND_JAR ( FOP_D6_JAR NAMES xalan xalan2
+    PATHS ${XSL_FOP_HOME} PATH_SUFFIXES lib )
+  ZORBA_FIND_JAR ( FOP_D7_JAR NAMES xmlgraphics-commons
+    PATHS ${XSL_FOP_HOME} PATH_SUFFIXES lib )
 
-  #MULTIPLE EXISTS CAN'T BE USED IN AN *IF* COMMAND, LOOKS LIKE A BUG ON CMAKE
+  # Multiple "EXISTS" clauses can't be used in a single IF() command;
+  # looks like a bug in cmake.
   SET(ALL_FOP FALSE)
   IF ( EXISTS ${FOP_JAR} )
     IF ( EXISTS ${FOP_D1_JAR} )
