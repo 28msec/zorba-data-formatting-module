@@ -23,7 +23,7 @@ FIND_PACKAGE (zorba_util-jvm_module QUIET)
 IF (zorba_util-jvm_module_FOUND)
   INCLUDE ("${zorba_util-jvm_module_USE_FILE}")
 
-  FIND_PACKAGE(JNI)
+  ZORBA_FIND_JNI()
   FIND_PACKAGE(Java)
   FIND_PACKAGE (Zorba REQUIRED HINTS "${ZORBA_BUILD_DIR}")
   INCLUDE ("${Zorba_USE_FILE}")
