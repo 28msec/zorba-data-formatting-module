@@ -21,8 +21,7 @@ xquery version "3.0";
  : to various formats such as PDF, EPS, PCL, AFP, Text, PNG, Postscript, RTF, and TIFF.
  : For instance, the following example converts a simple XSL-FO document to PDF:
  : <br />
- : <pre class="brush: xquery;">
- : import module namespace fop = "http://www.zorba-xquery.com/modules/xsl-fo";
+ : <pre class="ace-static" ace-mode="xquery"><![CDATA[import module namespace fop = "http://www.zorba-xquery.com/modules/xsl-fo";
  : import module namespace file = "http://expath.org/ns/file";
  : 
  : declare namespace fo = "http://www.w3.org/1999/XSL/Format";
@@ -41,8 +40,7 @@ xquery version "3.0";
  :   </fo:page-sequence>
  :  </fo:root>
  : let $pdf := fop:generator($fop:PDF, $xsl-fo)
- : return file:write-binary("simple.pdf", $pdf) 
- : </pre>
+ : return file:write-binary("simple.pdf", $pdf)]]></pre>
  : <br /> 
  : This module uses Apache-FOP to generate content from an XSL-FO document.
  : See <a href="http://xmlgraphics.apache.org/fop/">the Apache FOP documentation</a> for further information.
@@ -57,7 +55,7 @@ xquery version "3.0";
  : @author Markus Pilman
  : @see http://xmlgraphics.apache.org/fop/
  : @library <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK - Java Development Kit</a>
- : @project data processing/data formatting
+ : @project Zorba/Data Formatting/XSL-FO
  :)
 module namespace xsl-fo = "http://www.zorba-xquery.com/modules/xsl-fo";
 
