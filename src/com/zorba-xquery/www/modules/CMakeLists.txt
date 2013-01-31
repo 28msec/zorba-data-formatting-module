@@ -17,7 +17,7 @@
       SET(XSL_FOP_HOME $ENV{XSL_FOP_HOME})
     ENDIF (DEFINED ENV{XSL_FOP_HOME})
   ENDIF (NOT DEFINED XSL_FOP_HOME)
-  
+
   IF (NOT DEFINED XSL_FOP_HOME)
     IF (WIN32)
       SET (XSL_FOP_HOME "C:\\dev\\libraries\\fop-1.0 C:\\dev\\libraries\\fop-1.0\\lib C:\\dev\\libraries\\fop-1.0\\build")
@@ -26,9 +26,9 @@
     ENDIF (WIN32)
     MESSAGE (STATUS "XSL_FOP_HOME not defined, trying defaults: ${XSL_FOP_HOME}")
   ENDIF (NOT DEFINED XSL_FOP_HOME)
-  
+
   STRING(REGEX REPLACE "\\\\" "/" XSL_FOP_HOME "${XSL_FOP_HOME}")
-  
+
   MESSAGE (STATUS "XSL-FOP HOME: ${XSL_FOP_HOME}")
   ZORBA_FIND_JAR ( FOP_JAR    NAMES fop
     PATHS ${XSL_FOP_HOME} PATH_SUFFIXES build)
@@ -40,11 +40,9 @@
     PATHS ${XSL_FOP_HOME} PATH_SUFFIXES lib )
   ZORBA_FIND_JAR ( FOP_D4_JAR NAMES commons-logging
     PATHS ${XSL_FOP_HOME} PATH_SUFFIXES lib )
-  ZORBA_FIND_JAR ( FOP_D5_JAR NAMES serializer
+  ZORBA_FIND_JAR ( FOP_D5_JAR NAMES xalan xalan2
     PATHS ${XSL_FOP_HOME} PATH_SUFFIXES lib )
-  ZORBA_FIND_JAR ( FOP_D6_JAR NAMES xalan xalan2
-    PATHS ${XSL_FOP_HOME} PATH_SUFFIXES lib )
-  ZORBA_FIND_JAR ( FOP_D7_JAR NAMES xmlgraphics-commons
+  ZORBA_FIND_JAR ( FOP_D6_JAR NAMES xmlgraphics-commons
     PATHS ${XSL_FOP_HOME} PATH_SUFFIXES lib )
 
   # Multiple "EXISTS" clauses can't be used in a single IF() command;
@@ -57,9 +55,7 @@
           IF ( EXISTS ${FOP_D4_JAR} )
             IF ( EXISTS ${FOP_D5_JAR} )
               IF ( EXISTS ${FOP_D6_JAR} )
-                IF ( EXISTS ${FOP_D7_JAR} )
-                  SET(ALL_FOP TRUE)
-                ENDIF ( EXISTS ${FOP_D7_JAR} )
+                SET(ALL_FOP TRUE)
               ENDIF ( EXISTS ${FOP_D6_JAR} )
             ENDIF ( EXISTS ${FOP_D5_JAR} )
           ENDIF ( EXISTS ${FOP_D4_JAR} )
@@ -67,7 +63,7 @@
       ENDIF ( EXISTS ${FOP_D2_JAR} )
     ENDIF ( EXISTS ${FOP_D1_JAR} )
   ENDIF ( EXISTS ${FOP_JAR} )
-  			
+
   IF ( ALL_FOP )
     MESSAGE(STATUS "FOP Libraries Found.")
     INCLUDE (CMakeJavaInformation )
@@ -91,15 +87,17 @@
     DECLARE_ZORBA_JAR(FILE ${FOP_D4_JAR} EXTERNAL)
     DECLARE_ZORBA_JAR(FILE ${FOP_D5_JAR} EXTERNAL)
     DECLARE_ZORBA_JAR(FILE ${FOP_D6_JAR} EXTERNAL)
-    DECLARE_ZORBA_JAR(FILE ${FOP_D7_JAR} EXTERNAL)
-    
+
     ADD_TEST_DIRECTORY("${PROJECT_SOURCE_DIR}/test")
 
   ELSE ( ALL_FOP )
-    MESSAGE (STATUS "fop.jar and/or all its dependecies (avalon-framework.jar, batik-all.jar, commons-io.jar, commons-logging.jar, serializer.jar, xalan2.jar, xmlgraphics-commons.jar) not found skiping data-formating module")
-    MESSAGE ( STATUS " fop: " ${FOP_JAR} "\n    avalon: " ${FOP_D1_JAR}
-  			"\n    batik: " ${FOP_D2_JAR} "\n    io: " ${FOP_D3_JAR} 
-  			"\n    logging: " ${FOP_D4_JAR} "\n    serializer: " ${FOP_D5_JAR} "  " 
-  			"\n    xalan: " ${FOP_D6_JAR} "\n    xmlgraphics: " ${FOP_D7_JAR} )
+    MESSAGE (STATUS "fop.jar and/or all its dependecies (avalon-framework.jar, batik-all.jar, commons-io.jar, commons-logging.jar, xalan2.jar, xmlgraphics-commons.jar) not found skiping data-formating module")
+    MESSAGE (STATUS " fop: " ${FOP_JAR} 
+                    "\n    avalon: " ${FOP_D1_JAR}
+                    "\n    batik: " ${FOP_D2_JAR}
+                    "\n    io: " ${FOP_D3_JAR}
+                    "\n    logging: " ${FOP_D4_JAR}
+                    "\n    xalan: " ${FOP_D5_JAR}
+                    "\n    xmlgraphics: " ${FOP_D6_JAR} )
   ENDIF ( ALL_FOP )
 
