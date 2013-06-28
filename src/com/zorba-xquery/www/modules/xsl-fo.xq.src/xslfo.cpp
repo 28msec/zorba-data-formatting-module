@@ -231,8 +231,8 @@ GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t& args,
 
     std::string lBinaryString((const char*) dataElements, dataSize);
     std::stringstream lStream(lBinaryString);
-    String base64S = base64::encode(lStream);
-    Item lRes = theFactory->createBase64Binary(base64S.c_str(), base64S.length());
+    String base64S( base64::encode(lStream) );
+    Item lRes( theFactory->createBase64Binary(base64S.c_str(), base64S.length(), true) );
     return ItemSequence_t(new SingletonItemSequence(lRes));
   } catch (zorba::jvm::VMOpenException&) {
     Item lQName = theFactory->createQName("http://www.zorba-xquery.com/modules/xsl-fo",
