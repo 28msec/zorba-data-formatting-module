@@ -1,4 +1,4 @@
-import module namespace fop = "http://www.zorba-xquery.com/modules/xsl-fo";
+import module namespace fop = "http://zorba.io/modules/xsl-fo";
 import module namespace file = "http://expath.org/ns/file";
 
 declare namespace fo = "http://www.w3.org/1999/XSL/Format";

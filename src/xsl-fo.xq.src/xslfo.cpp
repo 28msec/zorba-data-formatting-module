@@ -33,7 +33,7 @@
 
 #include "JavaVMSingleton.h"
 
-#define XSL_MODULE_NAMESPACE "http://www.zorba-xquery.com/modules/xsl-fo"
+#define XSL_MODULE_NAMESPACE "http://zorba.io/modules/xsl-fo"
 
 class JavaException {
 };
@@ -236,8 +236,8 @@ GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t& args,
     Item lRes( theFactory->createBase64Binary(base64S.data(), base64S.size(), true) );
     return ItemSequence_t(new SingletonItemSequence(lRes));
   } catch (zorba::jvm::VMOpenException&) {
-    Item lQName = theFactory->createQName("http://www.zorba-xquery.com/modules/xsl-fo",
-        "VM001");
+    Item lQName = theFactory->createQName("http://zorba.io/modules/xsl-fo",
+        "JVM-NOT-STARTED");
     throw USER_EXCEPTION(lQName, "Could not start the Java VM (is the classpath set?)");
   } catch (JavaException&) {
     jclass stringWriterClass = env->FindClass("java/io/StringWriter");
@@ -261,7 +261,7 @@ GeneratePDFFunction::evaluate(const ExternalFunction::Arguments_t& args,
     std::string err("");
     err += s.str();
     env->ExceptionClear();
-    Item lQName = theFactory->createQName("http://www.zorba-xquery.com/modules/xsl-fo",
+    Item lQName = theFactory->createQName("http://zorba.io/modules/xsl-fo",
         "JAVA-EXCEPTION");
     throw USER_EXCEPTION(lQName, err);
   }

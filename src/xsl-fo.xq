@@ -20,8 +20,8 @@ xquery version "3.0";
  : This module converts <a href="http://www.w3schools.com/xslfo/default.asp">XSL-FO</a> documents
  : to various formats such as PDF, EPS, PCL, AFP, Text, PNG, Postscript, RTF, and TIFF.
  : For instance, the following example converts a simple XSL-FO document to PDF:
- : <br />
- : <pre class="ace-static" ace-mode="xquery"><![CDATA[import module namespace fop = "http://www.zorba-xquery.com/modules/xsl-fo";
+ : <p/>
+ : <pre class="ace-static" ace-mode="xquery"><![CDATA[import module namespace fop = "http://zorba.io/modules/xsl-fo";
  : import module namespace file = "http://expath.org/ns/file";
  : 
  : declare namespace fo = "http://www.w3.org/1999/XSL/Format";
@@ -41,11 +41,10 @@ xquery version "3.0";
  :  </fo:root>
  : let $pdf := fop:generator($fop:PDF, $xsl-fo)
  : return file:write-binary("simple.pdf", $pdf)]]></pre>
- : <br /> 
+ : <p/> 
  : This module uses Apache-FOP to generate content from an XSL-FO document.
  : See <a href="http://xmlgraphics.apache.org/fop/">the Apache FOP documentation</a> for further information.
- : <br />
- : <br />
+ : <p/>
  : <b>Note for Windows users</b>: On Windows, this module won't work out of the box, since
  : this module uses Java. But the Java VM dll is not in the system path by default. To make
  : this module work, you need to add the directory where the jvm.dll is located to the
@@ -57,7 +56,7 @@ xquery version "3.0";
  : @library <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">JDK - Java Development Kit</a>
  : @project Zorba/Data Formatting/XSL-FO
  :)
-module namespace xsl-fo = "http://www.zorba-xquery.com/modules/xsl-fo";
+module namespace xsl-fo = "http://zorba.io/modules/xsl-fo";
 
 import module namespace util-jvm = "http://www.zorba-xquery.com/modules/util-jvm";
 
@@ -104,7 +103,7 @@ declare variable $xsl-fo:RTF as xs:string := "application/rtf";
 declare variable $xsl-fo:TIFF as xs:string := "image/tiff";
 
 (:~
- : Deprecated. This function has been deprecated, the JVM and it's classpath is handled diffrently.<br/>
+ : Deprecated. This function has been deprecated, the JVM and it's classpath is handled diffrently.<p/>
  : The generator function takes an XSL-FO document as input and generates output in the format given as input.
  : The output format can be given as a MIME type - for example "application/pdf" - or one of the predefined
  : variables can be used - like $xsl-fo:PDF. Please refer to the Apache FOP documentation for
@@ -117,7 +116,7 @@ declare variable $xsl-fo:TIFF as xs:string := "image/tiff";
  : @param $xsl-fo-document The XSL-FO document from which the output should be generated. <a href="http://www.w3schools.com/xslfo/xslfo_intro.asp">More information about XSL-FO documents.</a>.
  : @param $classpath This parameter is not used, hence the deprecation of this function.
  : @return The generated output document.
- : @error xsl-fo:VM001 If zorba was unable to start the JVM.
+ : @error xsl-fo:JVM-NOT-STARTED If zorba was unable to start the JVM.
  : @error xsl-fo:JAVA-EXCEPTION If Apache FOP throws an exception - i.e. if the input format is not correct/supported.
  : @deprecated
  :)
@@ -126,12 +125,10 @@ declare function xsl-fo:generator($output-format as xs:string, $xsl-fo-document 
 };
 
 (:~
- : The function behaves like <a href="#generator#3">generator#3</a>, but tries to find the needed Java libraries itself.
- : <br />
- : On a Mac OS X computer, it should be sufficient to install Apache FOP via Mac Ports.<br />
- : On Ubuntu it should be sufficient to install the fop packages via apt-get.<br />
- : On Windows, the classpath needs to be set manually using <a href="#generator#3">generator#3</a>.
- : <br />
+ : The function behaves like <a href="#generator#3">generator#3</a>, but tries to find the needed Java libraries itself.<p/>
+ : On a Mac OS X computer, it should be sufficient to install Apache FOP via Mac Ports.<p/>
+ : On Ubuntu it should be sufficient to install the fop packages via apt-get.<p/>
+ : On Windows, the classpath needs to be set manually using <a href="#generator#3">generator#3</a>.<p/>
  : This function tries to find the jar files via environment variables. The user can set the
  : variable FOP_HOME to the root directory of an Apache FOP distribution. If you have all
  : JAR files in the same directory, you can set the environment variable FOP_LIB_DIR to this
@@ -141,7 +138,7 @@ declare function xsl-fo:generator($output-format as xs:string, $xsl-fo-document 
  :        create.
  : @param $xsl-fo-document The XSL-FO document from which the output should be generated.
  : @return The generated output document.
- : @error xsl-fo:VM001 If zorba was unable to start the JVM.
+ : @error xsl-fo:JVM-NOT-STARTED If zorba was unable to start the JVM.
  : @error xsl-fo:JAVA-EXCEPTION If Apache FOP throws an exception - i.e. if the input format is not correct/supported.
  : @error xsl-fo:JAR-NOT-FOUND If a needed Java library could not be found.
  :)
